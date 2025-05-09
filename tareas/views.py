@@ -3,9 +3,8 @@ from rest_framework import generics, permissions, status, viewsets, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Actividad
-from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 
 from .models import ChecklistItem, Usuario, Tarea, Etiqueta, Adjunto, Actividad
@@ -17,7 +16,8 @@ from .serializers import (
     EtiquetaSerializer,
     ChecklistItemSerializer,
     AdjuntoSerializer,
-    ActividadSerializer
+    ActividadSerializer,
+    CustomTokenObtainPairSerializer,
 )
 
 # ----------------------
@@ -60,35 +60,10 @@ class CambiarPasswordView(APIView):
         return Response({"success": "La contraseña se cambió correctamente."}, status=status.HTTP_200_OK)
 
 # ----------------------
-# Login personalizado con JWT
+# Login personalizado con JWT (Token)
 # ----------------------
-class CustomLoginView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    def post(self, request):
-        email = request.data.get("email", "").strip().lower()
-        password = request.data.get("password")
-
-        if not email or not password:
-            return Response({"error": "Email y contraseña son obligatorios."}, status=status.HTTP_400_BAD_REQUEST)
-
-        user = authenticate(request, email=email, password=password)
-        if not user:
-            return Response({"error": "Credenciales inválidas."}, status=status.HTTP_401_UNAUTHORIZED)
-
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            "refresh": str(refresh),
-            "access": str(refresh.access_token),
-            "user": {
-                "id": user.id,
-                "email": user.email,
-                "nombre_completo": user.nombre_completo,
-                "foto": user.foto.url if user.foto else None,
-                "pais": user.pais,
-                "ciudad": user.ciudad
-            }
-        })
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
 
 # ----------------------
 # Tareas
@@ -110,8 +85,8 @@ class TareaViewSet(viewsets.ModelViewSet):
     def perform_update(self, serializer):
         instance = serializer.save()
         Actividad.objects.create(
-        tarea=instance,
-        descripcion=f"La tarea fue actualizada por {self.request.user.nombre_completo}"
+            tarea=instance,
+            descripcion=f"La tarea fue actualizada por {self.request.user.nombre_completo}"
         )    
 
 # ----------------------
