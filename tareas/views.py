@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django_filters.rest_framework import DjangoFilterBackend
+from django.contrib.auth import get_user_model
 from rest_framework.permissions import IsAuthenticated
 
 from .models import ChecklistItem, Usuario, Tarea, Etiqueta, Adjunto, Actividad
