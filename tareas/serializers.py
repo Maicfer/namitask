@@ -68,9 +68,73 @@ class PasswordChangeSerializer(serializers.Serializer):
         return value
 
 # -------------------------
-# RESTO SIN CAMBIOS...
-# (ActividadSerializer, AdjuntoSerializer, EtiquetaSerializer, ChecklistItemSerializer, TareaSerializer)
-# (no los repito porque no se tocaron)
+# SERIALIZADOR DE HISTORIAL
+# -------------------------
+class ActividadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Actividad
+        fields = ['id', 'tarea', 'descripcion', 'fecha']
+        read_only_fields = ['id', 'fecha']
+
+
+# -------------------------
+# SERIALIZADOR DE ADJUNTOS
+# -------------------------
+class AdjuntoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Adjunto
+        fields = ['id', 'archivo', 'descripcion', 'fecha_subida', 'tarea']
+        read_only_fields = ['id', 'fecha_subida']
+
+
+# -------------------------
+# ETIQUETAS
+# -------------------------
+class EtiquetaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Etiqueta
+        fields = ['id', 'nombre', 'color']
+
+
+# -------------------------
+# CHECKLIST
+# -------------------------
+class ChecklistItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ChecklistItem
+        fields = '_all_'
+        read_only_fields = ['id', 'fecha_creacion']
+
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+        tarea = instance.tarea
+        items = tarea.checklist_items.all()
+        if items.exists() and all(item.completado for item in items):
+            tarea.estado = 'completada'
+        else:
+            tarea.estado = 'pendiente'
+        tarea.save()
+        return instance
+
+
+# -------------------------
+# TAREAS
+# -------------------------
+class TareaSerializer(serializers.ModelSerializer):
+    checklist = ChecklistItemSerializer(many=True, read_only=True)
+    etiquetas = EtiquetaSerializer(many=True, read_only=True)
+    etiquetas_ids = serializers.PrimaryKeyRelatedField(
+        queryset=Etiqueta.objects.all(), many=True, write_only=True, source='etiquetas'
+    )
+
+    class Meta:
+        model = Tarea
+        fields = [
+            'id', 'titulo', 'descripcion', 'estado', 'prioridad',
+            'fecha_creacion', 'fecha_limite', 'asignado_a',
+            'etiquetas', 'etiquetas_ids', 'checklist'
+        ]
+        read_only_fields = ['asignado_a']
 
 
 
