@@ -1,0 +1,16 @@
+services: 
+  - type: web
+    name: namitask-backend
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn namitask.wsgi:application
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: .onrender.com,localhost,127.0.0.1
+      - key: DATABASE_URL
+        value: postgresql://namitask_db_user:M695rPLyyCUu4BGvkCcoEmmS7yz8DyLB@dpg-d0enda49c44c738811o0-a/namitask_db
+
