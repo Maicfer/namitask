@@ -12,9 +12,10 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = ['*']
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
-    "",  # Cambia si usas otro dominio frontendcolocar el de web
+    "http://localhost:5173",  # desarrollo local
+    "https://namitask-frontend.onrender.com",  # producción
 ]
+
 
 INSTALLED_APPS = [
     'corsheaders',
