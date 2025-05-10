@@ -8,7 +8,14 @@ from rest_framework.validators import UniqueValidator
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = 'email'
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['email'] = user.email
+        token['nombre_completo'] = user.nombre_completo
+        token['pais'] = user.pais
+        token['ciudad'] = user.ciudad
+        return token
 
     def validate(self, attrs):
         data = super().validate(attrs)
@@ -76,7 +83,6 @@ class ActividadSerializer(serializers.ModelSerializer):
         fields = ['id', 'tarea', 'descripcion', 'fecha']
         read_only_fields = ['id', 'fecha']
 
-
 # -------------------------
 # SERIALIZADOR DE ADJUNTOS
 # -------------------------
@@ -86,7 +92,6 @@ class AdjuntoSerializer(serializers.ModelSerializer):
         fields = ['id', 'archivo', 'descripcion', 'fecha_subida', 'tarea']
         read_only_fields = ['id', 'fecha_subida']
 
-
 # -------------------------
 # ETIQUETAS
 # -------------------------
@@ -95,14 +100,13 @@ class EtiquetaSerializer(serializers.ModelSerializer):
         model = Etiqueta
         fields = ['id', 'nombre', 'color']
 
-
 # -------------------------
 # CHECKLIST
 # -------------------------
 class ChecklistItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = ChecklistItem
-        fields = '_all_'
+        fields = '__all__'
         read_only_fields = ['id', 'fecha_creacion']
 
     def update(self, instance, validated_data):
@@ -115,7 +119,6 @@ class ChecklistItemSerializer(serializers.ModelSerializer):
             tarea.estado = 'pendiente'
         tarea.save()
         return instance
-
 
 # -------------------------
 # TAREAS
@@ -135,6 +138,7 @@ class TareaSerializer(serializers.ModelSerializer):
             'etiquetas', 'etiquetas_ids', 'checklist'
         ]
         read_only_fields = ['asignado_a']
+
 
 
 

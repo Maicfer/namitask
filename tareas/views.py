@@ -2,11 +2,8 @@ from django.contrib.auth import authenticate
 from rest_framework import generics, permissions, status, viewsets, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django_filters.rest_framework import DjangoFilterBackend
-from django.contrib.auth import get_user_model
-from rest_framework.permissions import IsAuthenticated
 
 from .models import ChecklistItem, Usuario, Tarea, Etiqueta, Adjunto, Actividad
 from .serializers import (
@@ -88,7 +85,7 @@ class TareaViewSet(viewsets.ModelViewSet):
         Actividad.objects.create(
             tarea=instance,
             descripcion=f"La tarea fue actualizada por {self.request.user.nombre_completo}"
-        )    
+        )
 
 # ----------------------
 # Etiquetas
@@ -126,6 +123,7 @@ class ActividadViewSet(viewsets.ReadOnlyModelViewSet):
         if tarea_id:
             return Actividad.objects.filter(tarea_id=tarea_id).order_by('-fecha')
         return Actividad.objects.none()
+
 
 
 
