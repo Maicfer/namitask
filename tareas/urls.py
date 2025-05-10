@@ -31,6 +31,4 @@ urlpatterns = [
     path('cambiar-password/', CambiarPasswordView.as_view(), name='cambiar-password'),
 ]
 
-]
-
 
