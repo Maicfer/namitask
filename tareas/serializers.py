@@ -3,30 +3,39 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth import get_user_model
-from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
+from .models import Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
 
-User = get_user_model()
+Usuario = get_user_model()
 
 # -------------------------
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = User.EMAIL_FIELD  # Usamos 'email' como username
-
     def validate(self, attrs):
-        data = super().validate(attrs)
+        email = attrs.get("email")
+        password = attrs.get("password")
+
+        try:
+            user = Usuario.objects.get(email=email)
+            if not user.check_password(password):
+                raise serializers.ValidationError("Credenciales incorrectas.")
+        except Usuario.DoesNotExist:
+            raise serializers.ValidationError("Credenciales incorrectas.")
+
+        # clave: username = email
+        data = super().validate({"username": email, "password": password})
         data["user"] = {
-            "id": self.user.id,
-            "email": self.user.email,
-            "nombre_completo": self.user.nombre_completo,
-            "foto": self.user.foto.url if self.user.foto else None,
-            "pais": self.user.pais,
-            "ciudad": self.user.ciudad,
+            "id": user.id,
+            "email": user.email,
+            "nombre_completo": user.nombre_completo,
+            "foto": user.foto.url if user.foto else None,
+            "pais": user.pais,
+            "ciudad": user.ciudad,
         }
         return data
 
 # -------------------------
-# SERIALIZADOR DE REGISTRO
+# REGISTRO
 # -------------------------
 class RegisterSerializer(serializers.ModelSerializer):
     email = serializers.EmailField(

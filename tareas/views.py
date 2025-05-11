@@ -1,4 +1,3 @@
-from django.contrib.auth import authenticate
 from rest_framework import generics, permissions, status, viewsets, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -58,7 +57,7 @@ class CambiarPasswordView(APIView):
         return Response({"success": "La contraseña se cambió correctamente."}, status=status.HTTP_200_OK)
 
 # ----------------------
-# Login personalizado con JWT (Token)
+# Login personalizado con JWT
 # ----------------------
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
@@ -79,7 +78,7 @@ class TareaViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(asignado_a=self.request.user)
-        
+
     def perform_update(self, serializer):
         instance = serializer.save()
         Actividad.objects.create(
@@ -123,9 +122,3 @@ class ActividadViewSet(viewsets.ReadOnlyModelViewSet):
         if tarea_id:
             return Actividad.objects.filter(tarea_id=tarea_id).order_by('-fecha')
         return Actividad.objects.none()
-
-
-
-
-
-
