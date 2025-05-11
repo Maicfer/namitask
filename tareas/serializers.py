@@ -9,26 +9,29 @@ from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['email'] = user.email
-        token['nombre_completo'] = user.nombre_completo
-        token['pais'] = user.pais
-        token['ciudad'] = user.ciudad
-        return token
-
     def validate(self, attrs):
-        data = super().validate(attrs)
-        data['user'] = {
-            "id": self.user.id,
-            "email": self.user.email,
-            "nombre_completo": self.user.nombre_completo,
-            "foto": self.user.foto.url if self.user.foto else None,
-            "pais": self.user.pais,
-            "ciudad": self.user.ciudad
-        }
-        return data
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        try:
+            user = authenticate(email=email, password=password)
+            if not user:
+                raise serializers.ValidationError('Credenciales incorrectas.')
+
+            self.user = user
+            data = super().validate(attrs)
+            data['user'] = {
+                "id": self.user.id,
+                "email": self.user.email,
+                "nombre_completo": self.user.nombre_completo,
+                "foto": self.user.foto.url if self.user.foto else None,
+                "pais": self.user.pais,
+                "ciudad": self.user.ciudad
+            }
+            return data
+
+        except Exception as e:
+            raise serializers.ValidationError(f"Error inesperado: {str(e)}")
 
 # -------------------------
 # SERIALIZADOR DE REGISTRO
