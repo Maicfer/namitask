@@ -8,20 +8,16 @@ from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
 # -------------------------
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = 'email'
+def validate(self, attrs):
+    email = attrs.get('email')
+    password = attrs.get('password')
 
-    def validate(self, attrs):
-        email = attrs.get('email')
-        password = attrs.get('password')
-        
-        try:
-
+    try:
         user = authenticate(email=email, password=password)
         if not user:
             raise serializers.ValidationError('Credenciales incorrectas.')
 
-        self.user = user 
+        self.user = user
         data = super().validate(attrs)
         data['user'] = {
             "id": self.user.id,
@@ -32,9 +28,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "ciudad": self.user.ciudad
         }
         return data
-    
-        except Exception as e:
-            raise serializers.ValidationError(f"Error inesperado: {str(e)}")
+
+    except Exception as e:
+        raise serializers.ValidationError(f"Error inesperado: {str(e)}")
 
 # -------------------------
 # SERIALIZADOR DE REGISTRO
