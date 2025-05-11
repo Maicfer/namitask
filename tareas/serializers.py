@@ -1,42 +1,28 @@
 from rest_framework import serializers
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth import get_user_model
-from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.validators import UniqueValidator
+from django.contrib.auth import get_user_model
 from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
+
+User = get_user_model()
 
 # -------------------------
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
-User = get_user_model()
-
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = User.EMAIL_FIELD  # Usamos 'email' como username
+
     def validate(self, attrs):
-        # Cambiamos email por username porque DRF usa username internamente
-        email = attrs.get("email")
-        password = attrs.get("password")
-
-        try:
-            user = User.objects.get(email=email)
-            if not user.check_password(password):
-                raise serializers.ValidationError("Credenciales incorrectas.")
-        except User.DoesNotExist:
-            raise serializers.ValidationError("Credenciales incorrectas.")
-
-        # 👇 clave: llamamos al super con 'username=email'
-        data = super().validate({"username": email, "password": password})
-
+        data = super().validate(attrs)
         data["user"] = {
-            "id": user.id,
-            "email": user.email,
-            "nombre_completo": user.nombre_completo,
-            "foto": user.foto.url if user.foto else None,
-            "pais": user.pais,
-            "ciudad": user.ciudad,
+            "id": self.user.id,
+            "email": self.user.email,
+            "nombre_completo": self.user.nombre_completo,
+            "foto": self.user.foto.url if self.user.foto else None,
+            "pais": self.user.pais,
+            "ciudad": self.user.ciudad,
         }
-
         return data
 
 # -------------------------
@@ -148,8 +134,3 @@ class TareaSerializer(serializers.ModelSerializer):
             'etiquetas', 'etiquetas_ids', 'checklist'
         ]
         read_only_fields = ['asignado_a']
-
-
-
-
-
