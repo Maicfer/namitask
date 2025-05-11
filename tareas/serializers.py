@@ -3,7 +3,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.validators import UniqueValidator
-from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad}
+from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
 
 # -------------------------
 # SERIALIZADOR JWT CUSTOM
