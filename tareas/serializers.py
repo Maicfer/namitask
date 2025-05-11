@@ -27,7 +27,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "pais": user.pais,
             "ciudad": user.ciudad
         }
-        return data)
+        return data
 
 # -------------------------
 # SERIALIZADOR DE REGISTRO
