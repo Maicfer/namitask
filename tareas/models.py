@@ -23,21 +23,6 @@ class UsuarioManager(BaseUserManager):
 # -------------------------------
 # MODELO PERSONALIZADO DE USUARIO
 # -------------------------------
-class UsuarioManager(BaseUserManager):
-    def create_user(self, email, nombre_completo, password=None, **extra_fields):
-        if not email:
-            raise ValueError('El correo electrónico es obligatorio')
-        email = self.normalize_email(email)
-        user = self.model(email=email, nombre_completo=nombre_completo, **extra_fields)
-        user.set_password(password)
-        user.save(using=self._db)
-        return user
-
-    def create_superuser(self, email, nombre_completo, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        return self.create_user(email, nombre_completo, password, **extra_fields)
-
 class Usuario(AbstractBaseUser, PermissionsMixin):
     GENERO_OPCIONES = [
         ('M', 'Masculino'),
@@ -62,10 +47,12 @@ class Usuario(AbstractBaseUser, PermissionsMixin):
     objects = UsuarioManager()
 
     USERNAME_FIELD = 'email'
+    EMAIL_FIELD = 'email'  # ✅ ESTA LÍNEA ES CLAVE
     REQUIRED_FIELDS = ['nombre_completo']
 
     def __str__(self):
         return self.email
+
 # -------------------------------
 # MODELO DE ETIQUETA
 # -------------------------------
@@ -115,7 +102,7 @@ class ChecklistItem(models.Model):
 
     def __str__(self):
         return f"{self.nombre} - {'✔️' if self.completado else '❌'}"
-    
+
 # -------------------------------
 # MODELO DE ADJUNTO
 # -------------------------------
@@ -127,6 +114,7 @@ class Adjunto(models.Model):
 
     def __str__(self):
         return f"Adjunto para {self.tarea.titulo}"
+
 # -------------------------------
 # MODELO DE HISTORIAL ACTIVIDAD
 # -------------------------------    
@@ -137,4 +125,3 @@ class Actividad(models.Model):
 
     def __str__(self):
         return f"{self.tarea.titulo} - {self.descripcion[:30]}..."
-    
