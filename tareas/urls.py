@@ -16,15 +16,20 @@ from .views import (
 router = DefaultRouter()
 router.register(r'tareas', TareaViewSet, basename='tarea')
 router.register(r'etiquetas', EtiquetaViewSet, basename='etiqueta')
-router.register(r'checklist', ChecklistItemViewSet)
+router.register(r'checklist', ChecklistItemViewSet, basename='checklist')
 router.register(r'adjuntos', AdjuntoViewSet, basename='adjunto')
-router.register(r'actividad', ActividadViewSet, basename='actividad')
+router.register(r'actividades', ActividadViewSet, basename='actividad')
 
 urlpatterns = [
+    # Rutas para vista automática de la API (DRF Router)
     path('', include(router.urls)),
+
+    # Rutas para autenticación y perfil
     path('register/', RegisterView.as_view(), name='register'),
     path('profile/', ProfileView.as_view(), name='profile'),
     path('profile/cambiar-clave/', CambiarPasswordView.as_view(), name='cambiar-clave'),
+
+    # Rutas JWT
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
