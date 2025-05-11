@@ -3,21 +3,22 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.validators import UniqueValidator
-from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
+from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad}
 
 # -------------------------
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
-def validate(self, attrs):
-    email = attrs.get('email')
-    password = attrs.get('password')
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['email'] = user.email
+        token['nombre_completo'] = user.nombre_completo
+        token['pais'] = user.pais
+        token['ciudad'] = user.ciudad
+        return token
 
-    try:
-        user = authenticate(email=email, password=password)
-        if not user:
-            raise serializers.ValidationError('Credenciales incorrectas.')
-
-        self.user = user
+    def validate(self, attrs):
         data = super().validate(attrs)
         data['user'] = {
             "id": self.user.id,
