@@ -14,16 +14,14 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
+        
+        try:
 
-        if email and password:
-            user = authenticate(email=email, password=password)
-            if not user:
-                raise serializers.ValidationError('Credenciales incorrectas.')
+        user = authenticate(email=email, password=password)
+        if not user:
+            raise serializers.ValidationError('Credenciales incorrectas.')
 
-            self.user = user 
-        else:
-            raise serializers.ValidationError('Debe ingresar email y contraseña.')
-
+        self.user = user 
         data = super().validate(attrs)
         data['user'] = {
             "id": self.user.id,
@@ -36,7 +34,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return data
     
         except Exception as e:
-        raise serializers.ValidationError(f"Error inesperado: {str(e)}")
+            raise serializers.ValidationError(f"Error inesperado: {str(e)}")
 
 # -------------------------
 # SERIALIZADOR DE REGISTRO
