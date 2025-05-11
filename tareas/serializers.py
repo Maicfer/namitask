@@ -34,6 +34,9 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "ciudad": self.user.ciudad
         }
         return data
+    
+        except Exception as e:
+        raise serializers.ValidationError(f"Error inesperado: {str(e)}")
 
 # -------------------------
 # SERIALIZADOR DE REGISTRO
