@@ -10,32 +10,31 @@ from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
 # -------------------------
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
+User = get_user_model()
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        email = attrs.get('email')
-        password = attrs.get('password')
+        # Cambiamos email por username porque DRF usa username internamente
+        email = attrs.get("email")
+        password = attrs.get("password")
 
-        User = get_user_model()
         try:
             user = User.objects.get(email=email)
             if not user.check_password(password):
-                raise serializers.ValidationError('Credenciales incorrectas.')
+                raise serializers.ValidationError("Credenciales incorrectas.")
         except User.DoesNotExist:
-            raise serializers.ValidationError('Credenciales incorrectas.')
+            raise serializers.ValidationError("Credenciales incorrectas.")
 
-        # Forzamos el uso del user encontrado
-        data = super().validate({
-            'username': user.email,  # importante: usar como "username"
-            'password': password
-        })
+        # 👇 clave: llamamos al super con 'username=email'
+        data = super().validate({"username": email, "password": password})
 
-        data['user'] = {
+        data["user"] = {
             "id": user.id,
             "email": user.email,
             "nombre_completo": user.nombre_completo,
             "foto": user.foto.url if user.foto else None,
             "pais": user.pais,
-            "ciudad": user.ciudad
+            "ciudad": user.ciudad,
         }
 
         return data
