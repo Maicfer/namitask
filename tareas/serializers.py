@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.validators import UniqueValidator
@@ -9,32 +10,35 @@ from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
 # -------------------------
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
-class CustomTokenObtainPairSerializer(serializers.Serializer):
-    email = serializers.EmailField()
-    password = serializers.CharField()
-
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         email = attrs.get('email')
         password = attrs.get('password')
 
-        user = authenticate(email=email, password=password)
-        if not user:
+        User = get_user_model()
+        try:
+            user = User.objects.get(email=email)
+            if not user.check_password(password):
+                raise serializers.ValidationError('Credenciales incorrectas.')
+        except User.DoesNotExist:
             raise serializers.ValidationError('Credenciales incorrectas.')
 
-        refresh = RefreshToken.for_user(user)
+        # Forzamos el uso del user encontrado
+        data = super().validate({
+            'username': user.email,  # importante: usar como "username"
+            'password': password
+        })
 
-        return {
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-            'user': {
-                'id': user.id,
-                'email': user.email,
-                'nombre_completo': user.nombre_completo,
-                'foto': user.foto.url if user.foto else None,
-                'pais': user.pais,
-                'ciudad': user.ciudad
-            }
+        data['user'] = {
+            "id": user.id,
+            "email": user.email,
+            "nombre_completo": user.nombre_completo,
+            "foto": user.foto.url if user.foto else None,
+            "pais": user.pais,
+            "ciudad": user.ciudad
         }
+
+        return data
 
 # -------------------------
 # SERIALIZADOR DE REGISTRO
