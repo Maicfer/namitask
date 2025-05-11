@@ -1,23 +1,29 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
+from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.validators import UniqueValidator
+from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
 
 # -------------------------
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['email'] = user.email
-        token['nombre_completo'] = user.nombre_completo
-        token['pais'] = user.pais
-        token['ciudad'] = user.ciudad
-        return token
+    username_field = 'email'
 
     def validate(self, attrs):
+        email = attrs.get('email')
+        password = attrs.get('password')
+
+        if email and password:
+            user = authenticate(email=email, password=password)
+            if not user:
+                raise serializers.ValidationError('Credenciales incorrectas.')
+
+            self.user = user 
+        else:
+            raise serializers.ValidationError('Debe ingresar email y contraseña.')
+
         data = super().validate(attrs)
         data['user'] = {
             "id": self.user.id,
@@ -58,7 +64,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return Usuario.objects.create_user(**validated_data)
 
 # -------------------------
-# SERIALIZADOR DE PERFIL
+# PERFIL
 # -------------------------
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -75,7 +81,7 @@ class PasswordChangeSerializer(serializers.Serializer):
         return value
 
 # -------------------------
-# SERIALIZADOR DE HISTORIAL
+# HISTORIAL
 # -------------------------
 class ActividadSerializer(serializers.ModelSerializer):
     class Meta:
@@ -84,7 +90,7 @@ class ActividadSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'fecha']
 
 # -------------------------
-# SERIALIZADOR DE ADJUNTOS
+# ADJUNTOS
 # -------------------------
 class AdjuntoSerializer(serializers.ModelSerializer):
     class Meta:
@@ -138,6 +144,7 @@ class TareaSerializer(serializers.ModelSerializer):
             'etiquetas', 'etiquetas_ids', 'checklist'
         ]
         read_only_fields = ['asignado_a']
+
 
 
 
