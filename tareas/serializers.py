@@ -10,28 +10,24 @@ from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
 # -------------------------
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
-        email = attrs.get('email')
-        password = attrs.get('password')
+        email = attrs.get("email")
+        password = attrs.get("password")
 
-        try:
-            user = authenticate(email=email, password=password)
-            if not user:
-                raise serializers.ValidationError('Credenciales incorrectas.')
+        user = authenticate(email=email, password=password)
 
-            self.user = user
-            data = super().validate(attrs)
-            data['user'] = {
-                "id": self.user.id,
-                "email": self.user.email,
-                "nombre_completo": self.user.nombre_completo,
-                "foto": self.user.foto.url if self.user.foto else None,
-                "pais": self.user.pais,
-                "ciudad": self.user.ciudad
-            }
-            return data
+        if not user:
+            raise serializers.ValidationError("Credenciales incorrectas")
 
-        except Exception as e:
-            raise serializers.ValidationError(f"Error inesperado: {str(e)}")
+        data = super().validate(attrs)
+        data["user"] = {
+            "id": user.id,
+            "email": user.email,
+            "nombre_completo": user.nombre_completo,
+            "foto": user.foto.url if user.foto else None,
+            "pais": user.pais,
+            "ciudad": user.ciudad
+        }
+        return data)
 
 # -------------------------
 # SERIALIZADOR DE REGISTRO
