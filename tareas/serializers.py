@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth import authenticate
 from django.contrib.auth.password_validation import validate_password
@@ -8,26 +9,32 @@ from .models import Usuario, Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
 # -------------------------
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+class CustomTokenObtainPairSerializer(serializers.Serializer):
+    email = serializers.EmailField()
+    password = serializers.CharField()
+
     def validate(self, attrs):
-        email = attrs.get("email")
-        password = attrs.get("password")
+        email = attrs.get('email')
+        password = attrs.get('password')
 
         user = authenticate(email=email, password=password)
-
         if not user:
-            raise serializers.ValidationError("Credenciales incorrectas")
+            raise serializers.ValidationError('Credenciales incorrectas.')
 
-        data = super().validate(attrs)
-        data["user"] = {
-            "id": user.id,
-            "email": user.email,
-            "nombre_completo": user.nombre_completo,
-            "foto": user.foto.url if user.foto else None,
-            "pais": user.pais,
-            "ciudad": user.ciudad
+        refresh = RefreshToken.for_user(user)
+
+        return {
+            'refresh': str(refresh),
+            'access': str(refresh.access_token),
+            'user': {
+                'id': user.id,
+                'email': user.email,
+                'nombre_completo': user.nombre_completo,
+                'foto': user.foto.url if user.foto else None,
+                'pais': user.pais,
+                'ciudad': user.ciudad
+            }
         }
-        return data
 
 # -------------------------
 # SERIALIZADOR DE REGISTRO
