@@ -5,18 +5,23 @@ import dj_database_url
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# 🔐 Clave secreta
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'dev-secret-key')
 
+# 🛠️ Modo debug
 DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
-ALLOWED_HOSTS = ['*']
+# 🌍 Dominios permitidos
+ALLOWED_HOSTS = ['*']  # Puedes restringir en producción si deseas
 
+# 🌐 CORS para frontend
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",  # desarrollo local
-    "https://namitask-frontend.onrender.com",  # producción
+    "http://localhost:5173",
+    "https://namitask-frontend.onrender.com",
 ]
+CORS_ALLOW_CREDENTIALS = True
 
-
+# 📦 Apps instaladas
 INSTALLED_APPS = [
     'corsheaders',
     'django.contrib.admin',
@@ -31,9 +36,11 @@ INSTALLED_APPS = [
     'django_filters',
 ]
 
+# 🧱 Middleware
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Para servir archivos estáticos en producción
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -44,9 +51,11 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'config.urls'
 
+# 🖼️ Media (uploads de perfil, adjuntos)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
+# 🎨 Plantillas
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -54,6 +63,7 @@ TEMPLATES = [
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
+                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -64,11 +74,15 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# ⚠️ DATABASE CONFIGURATION (Render-ready)
+# 🗃️ Base de datos
 DATABASES = {
-    'default': dj_database_url.config(default='postgres://postgres:Travel@localhost:5432/namitask_db', conn_max_age=600)
+    'default': dj_database_url.config(
+        default='postgres://postgres:Travel@localhost:5432/namitask_db',
+        conn_max_age=600
+    )
 }
 
+# 🔐 Validadores de contraseña
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -76,6 +90,7 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# 🔐 DRF y JWT
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
@@ -91,18 +106,23 @@ SIMPLE_JWT = {
     'AUTH_HEADER_TYPES': ('Bearer',),
 }
 
-AUTHENTICATION_BACKENDS = [
-    'tareas.backends.EmailBackend',
-]
+# 🧠 Usuario personalizado
+AUTH_USER_MODEL = 'tareas.Usuario'
 
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+# ✅ CORRECTO: No uses EmailBackend manual
+# 🔴 ¡ELIMINA cualquier archivo llamado backends.py!
+# Y también borra esta línea, porque estás usando username=email ya bien:
+# AUTHENTICATION_BACKENDS = ['tareas.backends.EmailBackend']
+
+# ⚙️ Idioma y zona horaria
+LANGUAGE_CODE = 'es-co'
+TIME_ZONE = 'America/Bogota'
 USE_I18N = True
 USE_TZ = True
 
-# 🟦 STATIC FILES for Render
+# 📁 Archivos estáticos (Render)
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-AUTH_USER_MODEL = 'tareas.Usuario'
+# 🏷️ Default ID field
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
