@@ -10,19 +10,26 @@ Usuario = get_user_model()
 # -------------------------
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
+from rest_framework import serializers
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import get_user_model
+from rest_framework.exceptions import AuthenticationFailed
+
+Usuario = get_user_model()
+
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = Usuario.EMAIL_FIELD  # ✅ Línea crítica
+    username_field = Usuario.EMAIL_FIELD  
 
     def validate(self, attrs):
         email = attrs.get("email")
         password = attrs.get("password")
 
         try:
-            user = Usuario.objects.get(email=email)
+            user = Usuario.objects.get(email=email)  
             if not user.check_password(password):
-                raise serializers.ValidationError("Credenciales incorrectas.")
-        except User.DoesNotExist:
-            raise serializers.ValidationError("Credenciales incorrectas.")
+                raise AuthenticationFailed("Credenciales incorrectas.")
+        except Usuario.DoesNotExist:
+            raise AuthenticationFailed("Credenciales incorrectas.")
 
         data = super().validate({"username": email, "password": password})
         data["user"] = {
