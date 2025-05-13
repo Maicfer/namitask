@@ -18,7 +18,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         password = attrs.get("password")
 
         try:
-            user = User.objects.get(email=email)
+            user = Usuario.objects.get(email=email)
             if not user.check_password(password):
                 raise serializers.ValidationError("Credenciales incorrectas.")
         except User.DoesNotExist:
