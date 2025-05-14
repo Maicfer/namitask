@@ -1,8 +1,10 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import get_user_model
+from django.contrib.auth import authenticate
+from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth.password_validation import validate_password
 from rest_framework.validators import UniqueValidator
-from django.contrib.auth import get_user_model
 from .models import Tarea, Etiqueta, ChecklistItem, Adjunto, Actividad
 
 Usuario = get_user_model()
@@ -10,25 +12,16 @@ Usuario = get_user_model()
 # -------------------------
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
-from rest_framework import serializers
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from django.contrib.auth import get_user_model
-from rest_framework.exceptions import AuthenticationFailed
-
-Usuario = get_user_model()
-
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = Usuario.EMAIL_FIELD  
+    username_field = Usuario.EMAIL_FIELD  # 'email'
 
     def validate(self, attrs):
         email = attrs.get("email")
         password = attrs.get("password")
 
-        try:
-            user = Usuario.objects.get(email=email)  
-            if not user.check_password(password):
-                raise AuthenticationFailed("Credenciales incorrectas.")
-        except Usuario.DoesNotExist:
+        # 👇 Autenticamos usando el modelo y backend normal
+        user = authenticate(email=email, password=password)
+        if not user:
             raise AuthenticationFailed("Credenciales incorrectas.")
 
         data = super().validate({"username": email, "password": password})
@@ -151,3 +144,4 @@ class TareaSerializer(serializers.ModelSerializer):
             'etiquetas', 'etiquetas_ids', 'checklist'
         ]
         read_only_fields = ['asignado_a']
+
