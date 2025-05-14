@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.exceptions import AuthenticationFailed
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 from rest_framework.exceptions import AuthenticationFailed
@@ -13,14 +14,12 @@ Usuario = get_user_model()
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = Usuario.EMAIL_FIELD  # Asegura que sea 'email'
-
     def validate(self, attrs):
         email = attrs.get("email")
         password = attrs.get("password")
 
         if email is None or password is None:
-            raise AuthenticationFailed("Debes proporcionar email y contraseña.")
+            raise AuthenticationFailed("Email y contraseña son obligatorios.")
 
         try:
             user = Usuario.objects.get(email=email)
@@ -30,10 +29,11 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if not user.check_password(password):
             raise AuthenticationFailed("Credenciales incorrectas.")
 
-        # 👇 Asegura que el backend use "username=email"
-        data = super().validate({"username": email, "password": password})
+        # 🔥 SimpleJWT usa "username", así que debemos pasarlo como tal
+        attrs['username'] = email
 
-        # Agrega datos del usuario
+        data = super().validate(attrs)
+
         data["user"] = {
             "id": user.id,
             "email": user.email,
