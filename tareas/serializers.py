@@ -13,38 +13,33 @@ Usuario = get_user_model()
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['email'] = user.email
-        token['nombre'] = user.nombre_completo
-        return token
-
     def validate(self, attrs):
-        email = attrs.get("email")
+        email = attrs.get("email", "").strip().lower()
         password = attrs.get("password")
 
         try:
             user = Usuario.objects.get(email=email)
         except Usuario.DoesNotExist:
-            raise serializers.ValidationError("Usuario no encontrado")
+            raise AuthenticationFailed("Credenciales incorrectas.")
 
         if not user.check_password(password):
-            raise serializers.ValidationError("Contraseña incorrecta")
+            raise AuthenticationFailed("Credenciales incorrectas.")
 
+        # OJO: internamente se sigue usando username
         data = super().validate({"username": user.email, "password": password})
-        data['user'] = {
-            'id': user.id,
-            'email': user.email,
-            'nombre': user.nombre_completo,
+        data["user"] = {
+            "id": user.id,
+            "email": user.email,
+            "nombre_completo": user.nombre_completo,
+            "foto": user.foto.url if user.foto else None,
+            "pais": user.pais,
+            "ciudad": user.ciudad,
         }
         return data
 
     def to_internal_value(self, data):
         data["username"] = data.get("email")
         return super().to_internal_value(data)
-
-
 # -------------------------
 # REGISTRO
 # -------------------------
