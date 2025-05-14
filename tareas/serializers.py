@@ -14,29 +14,29 @@ Usuario = get_user_model()
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = Usuario.EMAIL_FIELD  # <- Esto es clave
+    username_field = 'email'  # << Esto es CLAVE
 
     def validate(self, attrs):
-        email = attrs.get("email")
-        password = attrs.get("password")
+        email = attrs.get('email')
+        password = attrs.get('password')
 
-        # Autenticamos directamente con authenticate
-        user = authenticate(request=self.context.get('request'), email=email, password=password)
+        if email is None or password is None:
+            raise serializers.ValidationError("Se requieren correo y contraseña")
 
-        if not user:
-            raise serializers.ValidationError({"detail": "Credenciales incorrectas."})
+        try:
+            user = Usuario.objects.get(email=email)
+        except Usuario.DoesNotExist:
+            raise AuthenticationFailed("Credenciales incorrectas")
 
-        data = super().validate({
-            "username": user.email,  # Necesario para que JWT funcione
-            "password": password,
-        })
+        if not user.check_password(password):
+            raise AuthenticationFailed("Credenciales incorrectas")
 
+        data = super().validate(attrs)  # Usa directamente email como username_field
         data['user'] = {
             'id': user.id,
             'email': user.email,
-            'nombre': user.nombre_completo,
+            'nombre': user.nombre_completo
         }
-
         return data
 # -------------------------
 # REGISTRO
