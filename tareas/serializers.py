@@ -14,35 +14,27 @@ Usuario = get_user_model()
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = 'email'  # 🔥 FUERZA EL CAMPO email como username
-    
+    username_field = Usuario.EMAIL_FIELD  # <- Esto es clave
+
     def validate(self, attrs):
         email = attrs.get("email")
         password = attrs.get("password")
 
-        if email is None or password is None:
-            raise AuthenticationFailed("Email y contraseña son obligatorios.")
+        # Autenticamos directamente con authenticate
+        user = authenticate(request=self.context.get('request'), email=email, password=password)
 
-        try:
-            user = Usuario.objects.get(email=email)
-        except Usuario.DoesNotExist:
-            raise AuthenticationFailed("Credenciales incorrectas.")
+        if not user:
+            raise serializers.ValidationError({"detail": "Credenciales incorrectas."})
 
-        if not user.check_password(password):
-            raise AuthenticationFailed("Credenciales incorrectas.")
+        data = super().validate({
+            "username": user.email,  # Necesario para que JWT funcione
+            "password": password,
+        })
 
-        # 🔥 SimpleJWT usa "username", así que debemos pasarlo como tal
-        attrs['username'] = email
-
-        data = super().validate(attrs)
-
-        data["user"] = {
-            "id": user.id,
-            "email": user.email,
-            "nombre_completo": user.nombre_completo,
-            "foto": user.foto.url if user.foto else None,
-            "pais": user.pais,
-            "ciudad": user.ciudad,
+        data['user'] = {
+            'id': user.id,
+            'email': user.email,
+            'nombre': user.nombre_completo,
         }
 
         return data
