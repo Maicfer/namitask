@@ -14,6 +14,8 @@ Usuario = get_user_model()
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'email'  # 🔥 FUERZA EL CAMPO email como username
+    
     def validate(self, attrs):
         email = attrs.get("email")
         password = attrs.get("password")
