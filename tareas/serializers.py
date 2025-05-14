@@ -13,8 +13,10 @@ Usuario = get_user_model()
 # SERIALIZADOR JWT CUSTOM
 # -------------------------
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = Usuario.EMAIL_FIELD  # Es 'email'
+
     def validate(self, attrs):
-        email = attrs.get("email", "").strip().lower()
+        email = attrs.get("email")
         password = attrs.get("password")
 
         try:
@@ -25,8 +27,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         if not user.check_password(password):
             raise AuthenticationFailed("Credenciales incorrectas.")
 
-        # OJO: internamente se sigue usando username
-        data = super().validate({"username": user.email, "password": password})
+        # Aquí llamamos al método original, pasando username=email
+        data = super().validate({"username": email, "password": password})
         data["user"] = {
             "id": user.id,
             "email": user.email,
@@ -36,10 +38,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             "ciudad": user.ciudad,
         }
         return data
-
-    def to_internal_value(self, data):
-        data["username"] = data.get("email")
-        return super().to_internal_value(data)
 # -------------------------
 # REGISTRO
 # -------------------------
