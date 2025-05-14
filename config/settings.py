@@ -1,7 +1,10 @@
+from corsheaders.defaults import default_headers 
 import os
 from pathlib import Path
 from datetime import timedelta
 import dj_database_url
+
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -16,10 +19,17 @@ ALLOWED_HOSTS = ['*']  # Puedes restringir en producción si deseas
 
 # 🌐 CORS para frontend
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5173",
     "https://namitask-frontend.onrender.com",
+    "http://localhost:5173",
 ]
 CORS_ALLOW_CREDENTIALS = True
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'content-type',
+    'authorization',
+    'x-csrftoken',
+    'x-requested-with',
+]
 
 # 📦 Apps instaladas
 INSTALLED_APPS = [
