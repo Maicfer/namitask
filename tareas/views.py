@@ -1,6 +1,7 @@
 from rest_framework import generics, permissions, status, viewsets, filters
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django_filters.rest_framework import DjangoFilterBackend
 
@@ -31,6 +32,7 @@ class RegisterView(generics.CreateAPIView):
 class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UsuarioSerializer
     permission_classes = [permissions.IsAuthenticated]
+    parser_classes = [MultiPartParser, FormParser]  # Soporte para imagenes y formularios
 
     def get_object(self):
         return self.request.user
