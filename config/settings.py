@@ -86,11 +86,8 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # 🗃️ Base de datos
 DATABASES = {
-    'default': dj_database_url.config(
-        default='postgres://postgres:Travel@localhost:5432/namitask_db',
-        conn_max_age=600,
-    )
-}
+    'default': dj_database_url.config(default='postgres://postgres:Travel@localhost:5432/namitask_db', conn_max_age=600)
+}   
 
 # 🔐 Validadores de contraseña
 AUTH_PASSWORD_VALIDATORS = [
