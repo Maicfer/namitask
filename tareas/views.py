@@ -31,6 +31,7 @@ class RegisterView(generics.CreateAPIView):
 
         if serializer.is_valid():
             user = serializer.save()
+            print(f"Usuario creado: {user.email}")
             # Autenticar al usuario recién registrado para generar tokens
             token_obtain_serializer = CustomTokenObtainPairSerializer(data=request.data)
             if token_obtain_serializer.is_valid():
