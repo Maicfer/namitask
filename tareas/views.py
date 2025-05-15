@@ -26,6 +26,25 @@ class RegisterView(generics.CreateAPIView):
     serializer_class = RegisterSerializer
     permission_classes = [permissions.AllowAny]
 
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        if serializer.is_valid():
+            user = serializer.save()
+            # Autenticar al usuario recién registrado para generar tokens
+            token_obtain_serializer = CustomTokenObtainPairSerializer(data=request.data)
+            if token_obtain_serializer.is_valid():
+                tokens = token_obtain_serializer.validated_data
+                return Response({
+                    "message": "Usuario creado exitosamente.",
+                    "tokens": tokens
+                }, status=status.HTTP_201_CREATED)
+            else:
+                # Si falla la generación de tokens, devolvemos un error
+                return Response(token_obtain_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 # ----------------------
 # Perfil
 # ----------------------
