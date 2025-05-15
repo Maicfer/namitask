@@ -22,7 +22,10 @@ from .serializers import (
 # Registro
 # ----------------------
 class RegisterView(generics.CreateAPIView):
-    # ... (código anterior)
+    queryset = Usuario.objects.all()
+    serializer_class = RegisterSerializer
+    permission_classes = [permissions.AllowAny]
+
     def post(self, request, *args, **kwargs):
         print("Petición POST a /api/register/ recibida:", request.data)
         serializer = self.get_serializer(data=request.data)
