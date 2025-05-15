@@ -87,7 +87,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # 🗃️ Base de datos
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgres://postgres:Travel@localhost:5432/namitask_db',
+        default='postgresql://namitask_db_user:M695rPLyyCUu4BGvkCcoEmmS7yz8DyLB@dpg-d0enda49c44c738811o0-a.oregon-postgres.render.com/namitask_db', 
         conn_max_age=600
     )
 }
