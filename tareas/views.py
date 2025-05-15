@@ -22,29 +22,24 @@ from .serializers import (
 # Registro
 # ----------------------
 class RegisterView(generics.CreateAPIView):
-    queryset = Usuario.objects.all()
-    serializer_class = RegisterSerializer
-    permission_classes = [permissions.AllowAny]
-
+    # ... (código anterior)
     def post(self, request, *args, **kwargs):
+        print("Petición POST a /api/register/ recibida:", request.data)
         serializer = self.get_serializer(data=request.data)
 
         if serializer.is_valid():
-            user = serializer.save()
-            # Autenticar al usuario recién registrado para generar tokens
-            token_obtain_serializer = CustomTokenObtainPairSerializer(data=request.data)
-            if token_obtain_serializer.is_valid():
-                tokens = token_obtain_serializer.validated_data
-                return Response({
-                    "message": "Usuario creado exitosamente.",
-                    "tokens": tokens
-                }, status=status.HTTP_201_CREATED)
-            else:
-                # Si falla la generación de tokens, devolvemos un error
-                return Response(token_obtain_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            print("Serializer es válido:", serializer.validated_data)
+            print("Intentando guardar el usuario...") # Agrega este log
+            try:
+                user = serializer.save()
+                print("Usuario guardado (aparentemente):", user.email, user.id) # Agrega este log
+                # ... (lógica de tokens)
+            except Exception as e:
+                print("Error al guardar el usuario:", e)
+                return Response({"error": "Error al crear el usuario."}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         else:
+            print("Serializer no es válido:", serializer.errors)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 # ----------------------
 # Perfil
 # ----------------------
