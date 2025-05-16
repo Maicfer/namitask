@@ -45,7 +45,9 @@ class RegisterView(generics.CreateAPIView):
                 # Si falla la generación de tokens, devolvemos un error
                 return Response(token_obtain_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)       
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 # ----------------------
 # Perfil
 # ----------------------
@@ -56,6 +58,7 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
 
 # ----------------------
 # Cambio de contraseña
@@ -78,11 +81,13 @@ class CambiarPasswordView(APIView):
         user.save()
         return Response({"success": "La contraseña se cambió correctamente."}, status=status.HTTP_200_OK)
 
+
 # ----------------------
 # Login personalizado con JWT
 # ----------------------
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
 
 # ----------------------
 # Tareas
@@ -127,7 +132,8 @@ class TareaViewSet(viewsets.ModelViewSet):
             )
             # Lógica para actualizar el estado de la tarea
             tarea.refresh_from_db()
-            tarea.estado = 'completada' if tarea.checklist_items.all().exists() and all(item.completado for item in tarea.checklist_items.all()) else 'pendiente'
+            tarea.estado = 'completada' if tarea.checklist_items.all().exists() and all(
+                item.completado for item in tarea.checklist_items.all()) else 'pendiente'
             tarea.save()
             return Response({'status': 'success', 'message': 'Checklist item actualizado y actividad registrada.'})
         except ChecklistItem.DoesNotExist:
@@ -140,11 +146,31 @@ class TareaViewSet(viewsets.ModelViewSet):
         try:
             adjunto = Adjunto.objects.get(pk=adjunto_id, tarea=tarea)
             descripcion = f"Se eliminó el adjunto: {adjunto.archivo.split('/')[-1]}"
+            try:
+                # Aquí podrías agregar lógica para eliminar el archivo físico si es necesario
+                # Ejemplo: import os; os.remove(adjunto.archivo.path)
+                pass
+            except Exception as e:
+                print(f"Error al intentar eliminar el archivo físico: {e}")
+                # Decide si quieres que falle la eliminación del adjunto por esto
+                # o simplemente loguear el error. Por ahora, continuaremos.
+                pass
             adjunto.delete()
-            Actividad.objects.create(tarea=tarea, descripcion=descripcion)
+            try:
+                Actividad.objects.create(tarea=tarea, descripcion=descripcion)
+            except Exception as e:
+                print(f"Error al crear actividad de eliminación de adjunto: {e}")
+                # Decide cómo manejar el fallo al crear la actividad.
+                pass
             return Response({'status': 'success', 'message': 'Adjunto eliminado y actividad registrada.'})
         except Adjunto.DoesNotExist:
             return Response({'error': 'Adjunto no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            print(f"Error inesperado al eliminar adjunto: {e}")
+            return Response({'error': 'Ocurrió un error al eliminar el adjunto en el servidor.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 # ----------------------
 # Etiquetas
 # ----------------------
@@ -152,6 +178,7 @@ class EtiquetaViewSet(viewsets.ModelViewSet):
     queryset = Etiqueta.objects.all()
     serializer_class = EtiquetaSerializer
     permission_classes = [permissions.IsAuthenticated]
+
 
 # ----------------------
 # Checklist Items
@@ -161,6 +188,7 @@ class ChecklistItemViewSet(viewsets.ModelViewSet):
     serializer_class = ChecklistItemSerializer
     permission_classes = [permissions.IsAuthenticated]
 
+
 # ----------------------
 # Adjuntos
 # ----------------------
@@ -168,6 +196,7 @@ class AdjuntoViewSet(viewsets.ModelViewSet):
     queryset = Adjunto.objects.all()
     serializer_class = AdjuntoSerializer
     permission_classes = [permissions.IsAuthenticated]
+
 
 # ----------------------
 # Historial de Actividad
