@@ -145,7 +145,8 @@ class TareaViewSet(viewsets.ModelViewSet):
         adjunto_id = request.data.get('adjunto_id')
         try:
             adjunto = Adjunto.objects.get(pk=adjunto_id, tarea=tarea)
-            descripcion = f"Se eliminó el adjunto: {adjunto.archivo.split('/')[-1]}"
+            # Usamos adjunto.archivo.name para obtener el nombre del archivo
+            descripcion = f"Se eliminó el adjunto: {adjunto.archivo.name.split('/')[-1]}"
             try:
                 # Aquí podrías agregar lógica para eliminar el archivo físico si es necesario
                 # Ejemplo: import os; os.remove(adjunto.archivo.path)
