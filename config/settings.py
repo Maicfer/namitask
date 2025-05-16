@@ -118,11 +118,6 @@ SIMPLE_JWT = {
 # 🧠 Usuario personalizado
 AUTH_USER_MODEL = 'tareas.Usuario'
 
-# ✅ CORRECTO: No uses EmailBackend manual
-# 🔴 ¡ELIMINA cualquier archivo llamado backends.py!
-# Y también borra esta línea, porque estás usando username=email ya bien:
-# AUTHENTICATION_BACKENDS = ['tareas.backends.EmailBackend']
-
 # ⚙️ Idioma y zona horaria
 LANGUAGE_CODE = 'es-co'
 TIME_ZONE = 'America/Bogota'
