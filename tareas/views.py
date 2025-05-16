@@ -5,6 +5,8 @@ from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django_filters.rest_framework import DjangoFilterBackend
+from django.shortcuts import get_object_or_404
+from django.db.models import Prefetch
 
 from .models import ChecklistItem, Usuario, Tarea, Etiqueta, Adjunto, Actividad
 from .serializers import (
@@ -101,7 +103,7 @@ class TareaViewSet(viewsets.ModelViewSet):
     search_fields = ['titulo', 'descripcion']
 
     def get_queryset(self):
-        return Tarea.objects.filter(asignado_a=self.request.user)
+        return Tarea.objects.filter(asignado_a=self.request.user).prefetch_related('checklist_items')
 
     def perform_create(self, serializer):
         serializer.save(asignado_a=self.request.user)
@@ -116,6 +118,11 @@ class TareaViewSet(viewsets.ModelViewSet):
             tarea=instance,
             descripcion=f"La tarea fue actualizada por {self.request.user.nombre_completo}"
         )
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = get_object_or_404(queryset, pk=self.kwargs['pk'])
+        return obj
 
     @action(detail=True, methods=['post'])
     def completar_checklist_item(self, request, pk=None):
