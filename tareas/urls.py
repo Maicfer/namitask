@@ -23,6 +23,10 @@ router.register(r'actividades', ActividadViewSet, basename='actividad')
 urlpatterns = [
     # Rutas para vista automática de la API (DRF Router)
     path('', include(router.urls)),
+    
+    # Rutas para las acciones personalizadas de TareaViewSet
+    path('tareas/<int:pk>/completar_checklist_item/', TareaViewSet.as_view({'post': 'completar_checklist_item'}), name='tarea-completar-checklist-item'),
+    path('tareas/<int:pk>/eliminar_adjunto/', TareaViewSet.as_view({'post': 'eliminar_adjunto'}), name='tarea-eliminar-adjunto'),
 
     # Rutas para autenticación y perfil
     path('register/', RegisterView.as_view(), name='register'),

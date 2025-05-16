@@ -1,5 +1,6 @@
 from rest_framework import generics, permissions, status, viewsets, filters
 from rest_framework.response import Response
+from rest_framework.decorators import action
 from rest_framework.views import APIView
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.views import TokenObtainPairView
@@ -106,6 +107,40 @@ class TareaViewSet(viewsets.ModelViewSet):
             tarea=instance,
             descripcion=f"La tarea fue actualizada por {self.request.user.nombre_completo}"
         )
+
+    @action(detail=True, methods=['post'])
+    def completar_checklist_item(self, request, pk=None):
+        tarea = self.get_object()
+        item_id = request.data.get('item_id')
+        completado = request.data.get('completado')
+        try:
+            checklist_item = ChecklistItem.objects.get(pk=item_id, tarea=tarea)
+            checklist_item.completado = completado
+            checklist_item.save()
+            Actividad.objects.create(
+                tarea=tarea,
+                descripcion=f"Se {'completó' if completado else 'reabrió'} el item del checklist: {checklist_item.nombre}"
+            )
+            # Lógica para actualizar el estado de la tarea
+            tarea.refresh_from_db()
+            tarea.estado = 'completada' if tarea.checklist_items.all().exists() and all(item.completado for item in tarea.checklist_items.all()) else 'pendiente'
+            tarea.save()
+            return Response({'status': 'success', 'message': 'Checklist item actualizado y actividad registrada.'})
+        except ChecklistItem.DoesNotExist:
+            return Response({'error': 'Checklist item no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
+
+    @action(detail=True, methods=['post'])
+    def eliminar_adjunto(self, request, pk=None):
+        tarea = self.get_object()
+        adjunto_id = request.data.get('adjunto_id')
+        try:
+            adjunto = Adjunto.objects.get(pk=adjunto_id, tarea=tarea)
+            descripcion = f"Se eliminó el adjunto: {adjunto.archivo.split('/')[-1]}"
+            adjunto.delete()
+            Actividad.objects.create(tarea=tarea, descripcion=descripcion)
+            return Response({'status': 'success', 'message': 'Adjunto eliminado y actividad registrada.'})
+        except Adjunto.DoesNotExist:
+            return Response({'error': 'Adjunto no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
 
 # ----------------------
 # Etiquetas
