@@ -100,6 +100,10 @@ class TareaViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(asignado_a=self.request.user)
+        Actividad.objects.create(
+            tarea=serializer.instance,
+            descripcion=f"La tarea fue creada por {self.request.user.nombre_completo}"
+        )
 
     def perform_update(self, serializer):
         instance = serializer.save()
@@ -141,7 +145,6 @@ class TareaViewSet(viewsets.ModelViewSet):
             return Response({'status': 'success', 'message': 'Adjunto eliminado y actividad registrada.'})
         except Adjunto.DoesNotExist:
             return Response({'error': 'Adjunto no encontrado.'}, status=status.HTTP_404_NOT_FOUND)
-
 # ----------------------
 # Etiquetas
 # ----------------------
