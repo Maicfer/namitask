@@ -5,7 +5,7 @@
 -- Dumped from database version 17.4
 -- Dumped by pg_dump version 17.4
 
--- Started on 2025-05-08 21:27:34
+-- Started on 2025-05-17 13:12:46
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -245,6 +245,7 @@ COPY public.tareas_usuario (id, password, last_login, is_superuser, email, is_st
 1	pbkdf2_sha256$1000000$y5Z3avMHqV33i0pEVhZGBD$U/kZZ/RETWur1h9HShvJeNE/PrJNYtp9VDKt32WRnhA=	2025-05-06 17:20:12.471689-05	t	gestor@gmail.com	t	t	2025-05-04 22:48:28.11992-05	Juan Mejía	+573001112233	fotos_perfil/madrid.jpg	Colombia	Bogotá	\N	\N	\N
 3	pbkdf2_sha256$1000000$WBXqxIz9LMPBpH39csyfsr$I/4lZmKb7t98YpVb9MYh3EqL+eXTfplv5ucwnRk/DIo=	\N	f	ferrr@gmail.com	f	t	2025-05-07 17:48:53.270291-05	Fernando	3213212323		Colombia	BOGOTA	1996-03-02	M	1023456789
 5	pbkdf2_sha256$1000000$LBvMsXd6OTrBfcqZeFukyb$v69oSHSFFhR180HG9hfiMpCKZsQept8s7QL219hgmI0=	\N	f	nata1@gmail.com	f	t	2025-05-08 10:41:51.722568-05	Natalia Nati	3201234569	fotos_perfil/madrid_qK49kTW.jpg	Colombia	Medellin	1995-05-08	F	123456789
+6	pbkdf2_sha256$1000000$VgC1CWI5D9wIVjNtvnU3Wd$vN3rJe7EMrcDrCQH+wyV7NaIZi8DapPh1T2Ts3Hou1Y=	\N	f	Pruebita@gmail.com	f	t	2025-05-13 21:16:37.298862-05	Pruebitas	3212330987		Colombia	BOGOTA DC	2002-02-22	M	2345678
 \.
 
 
@@ -391,7 +392,7 @@ SELECT pg_catalog.setval('public.tareas_usuario_groups_id_seq', 1, false);
 -- Name: tareas_usuario_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.tareas_usuario_id_seq', 5, true);
+SELECT pg_catalog.setval('public.tareas_usuario_id_seq', 6, true);
 
 
 --
@@ -403,7 +404,7 @@ SELECT pg_catalog.setval('public.tareas_usuario_id_seq', 5, true);
 SELECT pg_catalog.setval('public.tareas_usuario_user_permissions_id_seq', 1, false);
 
 
--- Completed on 2025-05-08 21:27:35
+-- Completed on 2025-05-17 13:12:46
 
 --
 -- PostgreSQL database dump complete

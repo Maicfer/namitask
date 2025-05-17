@@ -1,0 +1,2 @@
+Back:  https://github.com/Maicfer/namitask.git
+Front: https://github.com/Maicfer/namitask-frontend.git
